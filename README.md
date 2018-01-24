@@ -2,6 +2,10 @@
 
 NPM Package to provide events when a MySQL select statement result set changes.
 
+
+**This version had been modified so that one can put a delay between "binlog" events and query cache invalidation. So that to avoid a race-condition where the query invalidation is performed before a transaction's commit is effectively applied on the database.
+When that kind of race-condition happens (it doesn't happen often), the invalidation query returns old data that doesn't contains latest updates.**
+
 Built using the [`zongji` Binlog Tailer](https://github.com/nevill/zongji) and [`node-mysql`](https://github.com/felixge/node-mysql) projects.
 
 * [Example Application using Express, SockJS and React](https://github.com/numtel/reactive-mysql-example)
@@ -60,6 +64,7 @@ Setting | Type | Description
 --------|------|------------------------------
 `serverId`  | `integer` | [Unique number (1 - 2<sup>32</sup>)](http://dev.mysql.com/doc/refman/5.0/en/replication-options.html#option_mysqld_server-id) to identify this replication slave instance. Must be specified if running more than one instance.<br>**Default:** `1`
 `minInterval` | `integer` | Pass a number of milliseconds to use as the minimum between result set updates. Omit to refresh results on every update. May be changed at runtime.
+`delayBeforeCacheInvalidationQuery` | `integer` | (Default: 0) When the database content changes and a _binlog_ event is rised by **zongji**, this is the delay to wait before fetching new changes.<br>It's usefull to put some delay when sometimes, your data is not automatically updated after the database content gets modified.
 `checkConditionWhenQueued` | `boolean` | Set to `true` to call the condition function of a query on every binlog row change event. By default (when undefined or `false`), the condition function will not be called again when a query is already queued to be refreshed. Enabling this can be useful if external caching of row changes.
 
 #### Events Emitted
